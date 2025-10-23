@@ -1,0 +1,30 @@
+{
+    "name": "UIML",
+    "tree": {
+        "$path": "src"
+    },
+
+    "emitLegacyScripts": false,
+    "syncRules": [
+        {
+            "pattern": "*.legacy.server.lua",
+            "use": "legacyServerScript",
+            "suffix": ".legacy.server.lua"
+        },
+        {
+            "pattern": "*.legacy.server.luau",
+            "use": "legacyServerScript",
+            "suffix": ".legacy.server.luau"
+        },
+        {
+            "pattern": "*.legacy.client.lua",
+            "use": "legacyClientScript",
+            "suffix": ".legacy.client.lua"
+        },
+        {
+            "pattern": "*.legacy.client.luau",
+            "use": "legacyClientScript",
+            "suffix": ".legacy.client.luau"
+        }
+    ]
+}

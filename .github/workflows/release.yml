@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: Build and Upload Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Aftman
+        uses: ok-nick/setup-aftman@v0.4.2
+
+      - name: Check Rojo
+        run: rojo --version
+
+      - name: Build .rbxm
+        run: rojo build model.project.json -o UIML-${{ github.event.release.tag_name }}.rbxm
+
+      - name: Build .rbxl
+        run: rojo build default.project.json -o UIML-${{ github.event.release.tag_name }}.rbxl
+
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            UIML-${{ github.event.release.tag_name }}.rbxm
+            UIML-${{ github.event.release.tag_name }}.rbxl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

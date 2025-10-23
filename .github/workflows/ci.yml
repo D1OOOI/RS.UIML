@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+    - dev
+  pull_request:
+    branches:
+    - main
+    - dev
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Aftman
+      uses: ok-nick/setup-aftman@v0.4.2
+
+    - name: Lint
+      run: |
+        selene ./src
+
+  style:
+    name: Styling
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: JohnnyMorganz/stylua-action@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        version: v2.3.0
+        args: --check ./src
