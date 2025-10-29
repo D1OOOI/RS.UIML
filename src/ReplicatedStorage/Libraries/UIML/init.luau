@@ -1,48 +1,39 @@
 --	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES	SERVICES
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RF = game:GetService("ReplicatedFirst")
 
-local Controller = {
-	Name = script.Name,
-	UIML = {
-		Themes = nil,
-		MarkupFunctions = nil,
-	},
+local Module = {
+	Themes = nil,
+	MarkupFunctions = nil,
 }
 --	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS	CONSTANTS
-
-local PlayerGui, PlayerScripts = nil
-
-local LocalPlayer = Players.LocalPlayer
-
--- type UIML_Markup = { -- User Interface Markup Language (UIML)
--- 	Properties: any,
--- 	Attributes: any,
--- 	Tags: any,
--- 	Functions: any,
--- 	GuiState: any,
--- 	Tree: any,
--- 	[any]: any,
--- }
 
 --	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES	VARIABLES
 
 ----------------------------------------------------------------------------------------------------
 --	INIT		INIT		INIT		INIT		INIT		INIT		INIT		INIT	    INIT		INIT
 ----------------------------------------------------------------------------------------------------
-function Controller:Init()
-	PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-	PlayerScripts = LocalPlayer:WaitForChild("PlayerScripts")
+function Module:Init()
+	self.Themes = require(ReplicatedStorage.Data.UserInterface.Themes)
+	self.MarkupFunctions = require(script.Markup)
 
-	self:LoadStarterGui()
-	self.UIML:Init()
+	for _i, iObject in pairs(CollectionService:GetTagged("UserInterface")) do
+		local MetaData = {
+			GuiObject = iObject,
+		}
+
+		task.spawn(function()
+			self:Apply(MetaData)
+		end)
+
+		iObject:RemoveTag("UserInterface")
+	end
 end
 ----------------------------------------------------------------------------------------------------
 --	START		START		START		START		START		START		START		START		START		START
 ----------------------------------------------------------------------------------------------------
-function Controller:Start() end
+function Module:Start() end
 ----------------------------------------------------------------------------------------------------
 --	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS	FUNCTIONS
 ----------------------------------------------------------------------------------------------------
@@ -64,21 +55,8 @@ local function Find(Source, Path: string)
 	return Target
 end
 ----------------------------------------------------------------------------------------------------
-function Controller.UIML:Init()
-	self.Themes = require(RS.Data.UserInterface.Themes)
-	self.MarkupFunctions = require(script.Markup)
-
-	for _i, iObject in pairs(CollectionService:GetTagged("UserInterface")) do
-		task.spawn(function()
-			self:Apply(iObject)
-		end)
-
-		iObject:RemoveTag("UserInterface")
-	end
-end
-----------------------------------------------------------------------------------------------------
-function Controller.UIML:Apply(Object: GuiObject, Markup, SourceObject: GuiObject, SourceMarkup)
-	local Attributes = Object:GetAttributes()
+function Module:Apply(MetaData)
+	local Attributes = MetaData.GuiObject:GetAttributes()
 
 	-- if GuiObject:IsA("GuiObject") == false then
 	--     Framework.warn(`UIObject is not a GuiObject\
@@ -86,53 +64,54 @@ function Controller.UIML:Apply(Object: GuiObject, Markup, SourceObject: GuiObjec
 	--     return
 	-- end
 
-	if Markup == nil then
+	if MetaData.Object == nil then
 		if Attributes.UITheme == nil or Attributes.UIObject == nil then
 			warn(`Attributes UITheme or UIObject is nil!\
-        UIObject.Name: [{Object.Name}]`)
+    UIObject.Name: [{MetaData.GuiObject.Name}]`)
 			return
 		end
 
 		local Theme = self.Themes[Attributes.UITheme]
-		Markup = Find(Theme.Objects, Attributes.UIObject)
+		MetaData.Object = Find(Theme.Objects, Attributes.UIObject)
 
-		if Theme == nil or Markup == nil then
+		if Theme == nil or MetaData.Object == nil then
 			warn(`UITheme or UIML is nil!\
-        UIObject.Name: [{Object.Name}]`)
+    UIObject.Name: [{MetaData.Object.Name}]`)
 			return
 		end
 
-		Markup.Config = Theme.Config
+		MetaData.Object.Config = Theme.Config
+		MetaData.Utilities = Theme.Utilities
+	end
 
-		SourceObject = Object
-		SourceMarkup = Markup
+	if MetaData.Source == nil then
+		MetaData.Source = {
+			GuiObject = MetaData.GuiObject,
+			Object = MetaData.Object,
+		}
 	end
 
 	-- Applying
-	if Markup.Extends ~= nil then
-		pcall(self.MarkupFunctions.Extends, self, Object, Markup, SourceObject, SourceMarkup)
+	if MetaData.Object.Extends ~= nil then
+		pcall(self.MarkupFunctions.Extends, self, MetaData)
+	end
+	if MetaData.Object.Config ~= nil then
+		pcall(self.MarkupFunctions.Config, self, MetaData)
 	end
 
-	for i, MarkupTable in pairs(Markup) do
-		if i == "Extends" or i == "Functions" then
+	for i, MarkupTable in pairs(MetaData.Object) do
+		if i == "Extends" or i == "Functions" or i == "Config" then
 			continue
 		end
 
 		if self.MarkupFunctions[i] ~= nil then
-			pcall(self.MarkupFunctions[i], self, Object, Markup, SourceObject, SourceMarkup)
+			pcall(self.MarkupFunctions[i], self, MetaData)
 		end
 	end
 
-	if Markup.Functions ~= nil then
-		pcall(self.MarkupFunctions.Functions, self, Object, Markup, SourceObject, SourceMarkup)
+	if MetaData.Object.Functions ~= nil then
+		pcall(self.MarkupFunctions.Functions, self, MetaData)
 	end
 end
 ----------------------------------------------------------------------------------------------------
-function Controller:LoadStarterGui()
-	for _i, iObject in pairs(RF.StarterGui:GetChildren()) do
-		if iObject:IsA("ScreenGui") then
-			iObject:Clone().Parent = PlayerGui
-		end
-	end
-end
-----------------------------------------------------------------------------------------------------
+return Module

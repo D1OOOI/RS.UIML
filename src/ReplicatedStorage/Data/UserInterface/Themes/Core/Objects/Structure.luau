@@ -2,8 +2,6 @@ local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
-local Utilities = require(script.Parent.Parent.Parent.__Utilities)
-
 return {
 
 	--Extends = {
@@ -18,58 +16,59 @@ return {
 	Tags = {},
 
 	Functions = {
-		Init = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Init = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			self.Functions.Connect(self, Object, SourceSelf, SourceObject)
-			self.Functions.Start(self, Object, SourceSelf, SourceObject)
-			self.Functions.Update(self, Object, SourceSelf, SourceObject)
-
-			Utilities.CreateUIComponents(Object)
+			self.Object.Functions.Connect(self)
+			self.Object.Functions.Start(self)
+			self.Object.Functions.Update(self)
 
 			for i = 2, 10 do
-				local Layer = Object.Visual.Layer1:Clone()
+				local Layer = self.GuiObject.Visual.Layer1:Clone()
 
 				Layer.Name = `Layer{i}`
 				Layer.ZIndex = i
 
-				Layer.Parent = Object.Visual
+				Layer.Parent = self.GuiObject.Visual
 			end
 		end,
 
-		Start = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Start = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			Utilities.UpdateChangeables(Object)
+			self.Utilities.CreateUIComponents(self.GuiObject)
+			self.Utilities.UpdateChangeables(self.GuiObject)
 		end,
 
-		Connect = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			Object.AttributeChanged:Connect(function()
-				self.Functions.Update(self, Object, SourceSelf, SourceObject)
+		Connect = function(self)
+			self.GuiObject.AttributeChanged:Connect(function()
+				self.Object.Functions.Update(self)
 			end)
 		end,
 
-		Update = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Update = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
+
+			self.Utilities.UpdateChangeables(self.GuiObject)
 		end,
 	},
 
 	GuiState = {
-		--NonInteractable = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- NonInteractable = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Idle = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Idle = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Hover = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Hover = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Press = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 	},
 
 	Tree = {
@@ -97,6 +96,26 @@ return {
 						Size = UDim2.fromScale(1, 1),
 
 						ZIndex = 1000,
+
+						Text = "",
+						TextSize = 1,
+					},
+				},
+
+				{
+					ClassName = "TextBox",
+					Properties = {
+						Name = "TextBox",
+
+						Interactable = false,
+
+						BackgroundTransparency = 1,
+
+						Size = UDim2.fromScale(1, 1),
+
+						ZIndex = 100,
+
+						ClearTextOnFocus = false,
 
 						Text = "",
 						TextSize = 1,

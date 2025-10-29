@@ -2,8 +2,6 @@ local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
-local Utilities = require(script.Parent.Parent.Parent.__Utilities)
-
 return {
 
 	Extends = {
@@ -18,43 +16,52 @@ return {
 	Tags = {},
 
 	Functions = {
-		Init = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Init = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			self.Functions.Connect(self, Object, SourceSelf, SourceObject)
-			self.Functions.Start(self, Object, SourceSelf, SourceObject)
-			self.Functions.Update(self, Object, SourceSelf, SourceObject)
+			self.Object.Functions.Connect(self)
+			self.Object.Functions.Start(self)
+			self.Object.Functions.Update(self)
 
-			Utilities.CreateUIComponents(Object)
+			self.Utilities.CreateUIComponents(self.GuiObject)
+			self.Utilities.UpdateChangeables(self.GuiObject)
 
 			--------------------------------------------------
+			local AnimLayer1 = self.GuiObject.Visual.AnimationLayer1
+
+			self.Object.Functions.ConnectTouch(self, AnimLayer1)
 		end,
 
-		Start = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Start = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 		end,
 
-		Connect = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			Object.AttributeChanged:Connect(function()
-				self.Functions.Update(self, Object, SourceSelf, SourceObject)
+		Connect = function(self)
+			self.GuiObject.AttributeChanged:Connect(function()
+				self.Object.Functions.Update(self)
 			end)
 		end,
 
-		Update = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Update = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 		end,
 
-		CreateTouch = function(
-			self,
-			Object: GuiObject,
-			SourceSelf,
-			SourceObject: GuiObject,
-			TouchObject: GuiObject,
-			MainColor: Color3,
-			ShadowColor: Color3,
-			DecreaseEvent
-		)
-			local Assets = SourceObject.Assets
+		ConnectTouch = function(self, TouchObject: GuiObject)
+			local Connected = TouchObject:GetAttribute("IsConnected.MouseMoved")
+
+			if Connected ~= true then
+				TouchObject.MouseMoved:Connect(function(X, Y)
+					TouchObject:SetAttribute(
+						"LastMouseLocation",
+						UDim2.fromOffset(X - TouchObject.AbsolutePosition.X, Y - TouchObject.AbsolutePosition.Y)
+					)
+				end)
+				TouchObject:SetAttribute("IsConnected.MouseMoved", true)
+			end
+		end,
+
+		CreateTouch = function(self, TouchObject: GuiObject, MainColor: Color3, ShadowColor: Color3, DecreaseEvent)
+			local Assets = self.Source.GuiObject.Assets
 			local TouchAnim = Assets.Touch:Clone()
 
 			TouchAnim.Touch1.BackgroundColor3 = MainColor or Color3.new(1, 1, 1)
@@ -78,21 +85,21 @@ return {
 				TouchObject:SetAttribute("IsConnected.MouseMoved", true)
 			end
 
-			Utilities.Tween(TouchAnim.Touch1, Utilities.TI(0.5), {
+			self.Utilities.Tween(TouchAnim.Touch1, self.Utilities.TI(0.5), {
 				BackgroundTransparency = 0.5,
 				Size = UDim2.fromScale(5, 5),
 			})
-			Utilities.Tween(TouchAnim.Touch2, Utilities.TI(0.5, Enum.EasingStyle.Quad), {
+			self.Utilities.Tween(TouchAnim.Touch2, self.Utilities.TI(0.5, Enum.EasingStyle.Quad), {
 				BackgroundTransparency = 0,
 				Size = UDim2.fromScale(5, 5),
 			})
 
 			if DecreaseEvent == nil then
 				task.wait(0.5)
-				Utilities.Tween(TouchAnim.Touch1, Utilities.TI(0.5), {
+				self.Utilities.Tween(TouchAnim.Touch1, self.Utilities.TI(0.5), {
 					BackgroundTransparency = 1,
 				})
-				Utilities.Tween(TouchAnim.Touch2, Utilities.TI(1), {
+				self.Utilities.Tween(TouchAnim.Touch2, self.Utilities.TI(1), {
 					BackgroundTransparency = 1,
 				})
 				task.wait(0.5)
@@ -101,10 +108,10 @@ return {
 				local Connection = nil
 
 				Connection = DecreaseEvent:Connect(function()
-					Utilities.Tween(TouchAnim.Touch1, Utilities.TI(0.5), {
+					self.Utilities.Tween(TouchAnim.Touch1, self.Utilities.TI(0.5), {
 						BackgroundTransparency = 1,
 					})
-					Utilities.Tween(TouchAnim.Touch2, Utilities.TI(0.5), {
+					self.Utilities.Tween(TouchAnim.Touch2, self.Utilities.TI(0.5), {
 						BackgroundTransparency = 1,
 					})
 					task.wait(0.5)
@@ -117,37 +124,43 @@ return {
 	},
 
 	GuiState = {
-		--NonInteractable = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- NonInteractable = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Idle = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Idle = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Hover = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Hover = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Press = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			local AnimLayer1 = Object.Visual.AnimationLayer1
+			local AnimLayer1 = self.GuiObject.Visual.AnimationLayer1
 
-			self.Functions.CreateTouch(self, Object, AnimLayer1)
+			self.Object.Functions.CreateTouch(self, AnimLayer1)
 		end,
 	},
 
 	Tree = {
 		{
+			Path = "Interaction.UIPadding",
+			Attributes = {
+				Changeable = true,
+			},
+		},
+		{
 			Path = "Interaction.Button",
 			GuiState = {
-				Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-					local Attributes = Object:GetAttributes()
+				Press = function(self)
+					local Attributes = self.GuiObject:GetAttributes()
 
-					local AnimLayer1 = SourceObject.Visual.AnimationLayer1
+					local AnimLayer1 = self.Source.GuiObject.Visual.AnimationLayer1
 
-					SourceSelf.Functions.CreateTouch(self, Object, SourceSelf, SourceObject, AnimLayer1)
+					self.Source.Object.Functions.CreateTouch(self, AnimLayer1)
 				end,
 			},
 		},
@@ -157,8 +170,14 @@ return {
 				{
 					ClassName = "Frame",
 					Properties = {
-						BackgroundColor3 = Color3.new(0.05, 0.05, 0.05),
 						Size = UDim2.fromScale(1, 1),
+					},
+					Functions = {
+						Init = function(self)
+							local Attributes = self.Source.GuiObject:GetAttributes()
+
+							self.GuiObject.BackgroundColor3 = Attributes.BackgroundColor
+						end,
 					},
 				},
 			},
@@ -168,11 +187,8 @@ return {
 			Tree = {
 				{
 					Path = "UIPadding",
-					Properties = {
-						PaddingBottom = UDim.new(0, 5),
-						PaddingLeft = UDim.new(0, 5),
-						PaddingRight = UDim.new(0, 5),
-						PaddingTop = UDim.new(0, 5),
+					Attributes = {
+						Changeable = true,
 					},
 				},
 				{

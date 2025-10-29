@@ -47,10 +47,17 @@ return {
 		local Attributes = GuiObject:GetAttributes()
 
 		for _i, iObject in pairs(GuiObject:GetDescendants()) do
+			if iObject:GetAttribute("Changeable") ~= true then
+				continue
+			end
+
 			if iObject:IsA("UICorner") then
-				if iObject:GetAttribute("Changeable") == true then
-					iObject.CornerRadius = Attributes.UICornerRadius
-				end
+				iObject.CornerRadius = Attributes.UICornerRadius
+			elseif iObject:IsA("UIPadding") then
+				iObject.PaddingBottom = Attributes.UIPadding
+				iObject.PaddingLeft = Attributes.UIPadding
+				iObject.PaddingRight = Attributes.UIPadding
+				iObject.PaddingTop = Attributes.UIPadding
 			end
 		end
 	end,
@@ -85,7 +92,7 @@ return {
 
 				Padding.Name = "UIPadding"
 
-				Padding:SetAttribute("Changeable", true)
+				Padding:SetAttribute("Changeable", false)
 
 				Padding.Parent = iObject
 			end

@@ -2,8 +2,6 @@ local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
-local Utilities = require(script.Parent.Parent.Parent.__Utilities)
-
 return {
 
 	Extends = {
@@ -18,48 +16,48 @@ return {
 	Tags = {},
 
 	Functions = {
-		Init = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Init = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			self.Functions.Connect(self, Object, SourceSelf, SourceObject)
-			self.Functions.Start(self, Object, SourceSelf, SourceObject)
-			self.Functions.Update(self, Object, SourceSelf, SourceObject)
+			self.Object.Functions.Connect(self)
+			self.Object.Functions.Start(self)
+			self.Object.Functions.Update(self)
 
-			Utilities.CreateUIComponents(Object)
+			self.Utilities.CreateUIComponents(self.GuiObject)
 
 			--------------------------------------------------
 		end,
 
-		Start = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Start = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 		end,
 
-		Connect = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			Object.AttributeChanged:Connect(function()
-				self.Functions.Update(self, Object, SourceSelf, SourceObject)
+		Connect = function(self)
+			self.GuiObject.AttributeChanged:Connect(function()
+				self.Object.Functions.Update(self)
 			end)
 		end,
 
-		Update = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Update = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			local Interaction = SourceObject.Interaction
+			local Interaction = self.Source.GuiObject.Interaction
 		end,
 
-		ButtonState = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = SourceObject:GetAttributes()
+		ButtonState = function(self)
+			local Attributes = self.Source.GuiObject:GetAttributes()
 
-			local Layer2 = SourceObject.Visual.Layer2
+			local Layer2 = self.Source.GuiObject.Visual.Layer2
 
 			if Attributes.State == true then
 				for i, iObject in pairs({ "LeftUp-Down", "LeftUp-Right", "RightDown-Left", "RightDown-Up" }) do
-					Utilities.Tween(Layer2[iObject], Utilities.TI(0.2), {
-						BackgroundColor3 = Attributes.Color2,
+					self.Utilities.Tween(Layer2[iObject], self.Utilities.TI(0.2), {
+						BackgroundColor3 = Attributes.ActionColor,
 					})
 				end
 			else
 				for i, iObject in pairs({ "LeftUp-Down", "LeftUp-Right", "RightDown-Left", "RightDown-Up" }) do
-					Utilities.Tween(Layer2[iObject], Utilities.TI(0.2), {
+					self.Utilities.Tween(Layer2[iObject], self.Utilities.TI(0.2), {
 						BackgroundColor3 = Color3.new(1, 1, 1),
 					})
 				end
@@ -68,49 +66,49 @@ return {
 	},
 
 	GuiState = {
-		--NonInteractable = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- NonInteractable = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Idle = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Idle = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Hover = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Hover = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Press = function(self)
+		-- 	local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 	},
 
 	Tree = {
 		{
 			Path = "Interaction.Button",
 			GuiState = {
-				Idle = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-					local Attributes = SourceObject:GetAttributes()
+				Idle = function(self)
+					local Attributes = self.Source.GuiObject:GetAttributes()
 
-					SourceObject:SetAttribute("State", false)
+					self.Source.GuiObject:SetAttribute("State", false)
 
-					SourceSelf.Functions.ButtonState(self, Object, SourceSelf, SourceObject)
+					self.Source.Object.Functions.ButtonState(self)
 				end,
 
-				Hover = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-					local Attributes = SourceObject:GetAttributes()
+				Hover = function(self)
+					local Attributes = self.Source.GuiObject:GetAttributes()
 
-					SourceObject:SetAttribute("State", false)
+					self.Source.GuiObject:SetAttribute("State", false)
 
-					SourceSelf.Functions.ButtonState(self, Object, SourceSelf, SourceObject)
+					self.Source.Object.Functions.ButtonState(self)
 				end,
 
-				Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-					local Attributes = SourceObject:GetAttributes()
+				Press = function(self)
+					local Attributes = self.Source.GuiObject:GetAttributes()
 
-					SourceObject:SetAttribute("State", true)
+					self.Source.GuiObject:SetAttribute("State", true)
 
-					SourceSelf.Functions.ButtonState(self, Object, SourceSelf, SourceObject)
+					self.Source.Object.Functions.ButtonState(self)
 				end,
 			},
 		},

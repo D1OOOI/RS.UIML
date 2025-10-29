@@ -2,8 +2,6 @@ local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
 local TS = game:GetService("TweenService")
 
-local Utilities = require(script.Parent.Parent.Parent.__Utilities)
-
 return {
 
 	Extends = {
@@ -18,32 +16,32 @@ return {
 	Tags = {},
 
 	Functions = {
-		Init = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Init = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			self.Functions.Connect(self, Object, SourceSelf, SourceObject)
-			self.Functions.Start(self, Object, SourceSelf, SourceObject)
-			self.Functions.Update(self, Object, SourceSelf, SourceObject)
+			self.Object.Functions.Connect(self)
+			self.Object.Functions.Start(self)
+			self.Object.Functions.Update(self)
 
-			Utilities.CreateUIComponents(Object)
+			self.Utilities.CreateUIComponents(self.GuiObject)
 
 			--------------------------------------------------
 		end,
 
-		Start = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Start = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 		end,
 
-		Connect = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			Object.AttributeChanged:Connect(function()
-				self.Functions.Update(self, Object, SourceSelf, SourceObject)
+		Connect = function(self)
+			self.GuiObject.AttributeChanged:Connect(function()
+				self.Object.Functions.Update(self)
 			end)
 		end,
 
-		Update = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-			local Attributes = Object:GetAttributes()
+		Update = function(self)
+			local Attributes = self.GuiObject:GetAttributes()
 
-			local Interaction = SourceObject.Interaction
+			local Interaction = self.Source.GuiObject.Interaction
 
 			Interaction.TextLabel.Text = Attributes.Text
 			Interaction.TextLabelShadow.Text = Attributes.Text
@@ -51,30 +49,30 @@ return {
 			Interaction.ImageLabel.Image = Attributes.Image
 			Interaction.ImageLabelShadow.Image = Attributes.Image
 
-			Object.Interaction.TextLabel.TextColor3 = Attributes.TextColor
-			Object.Interaction.TextLabel.UIStroke.Color = Attributes.TextShadowColor
-			Object.Interaction.TextLabelShadow.TextColor3 = Attributes.Color2
-			Object.Interaction.TextLabelShadow.UIStroke.Color = Attributes.Color2
-			Object.Interaction.ImageLabelShadow.ImageColor3 = Attributes.Color2
+			self.GuiObject.Interaction.TextLabel.TextColor3 = Attributes.TextColor
+			self.GuiObject.Interaction.TextLabel.UIStroke.Color = Attributes.TextShadowColor
+			self.GuiObject.Interaction.TextLabelShadow.TextColor3 = Attributes.ActionColor
+			self.GuiObject.Interaction.TextLabelShadow.UIStroke.Color = Attributes.ActionColor
+			self.GuiObject.Interaction.ImageLabelShadow.ImageColor3 = Attributes.ActionColor
 		end,
 	},
 
 	GuiState = {
-		--NonInteractable = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- NonInteractable = function(self)
+		--     local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Idle = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Idle = function(self)
+		--     local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Hover = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Hover = function(self)
+		--     local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 
-		--Press = function(self, Object: GuiObject, SourceSelf, SourceObject: GuiObject)
-		--	local Attributes = Object:GetAttributes()
-		--end,
+		-- Press = function(self)
+		--     local Attributes = self.GuiObject:GetAttributes()
+		-- end,
 	},
 
 	Tree = {},

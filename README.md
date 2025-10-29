@@ -1,6 +1,6 @@
-# RS.UIML
+# UIML
 
-It doesn't look like HTML
+It doesn't look or act like HTML
 
 ## Install
 
@@ -12,15 +12,20 @@ It doesn't look like HTML
 
 ## Plugin
 
-  1. The plugin is completely (almost) synchronized with Replicated Storage, when you change any script it will be synchronized with the internal environment (because of this there may be quite a lot of errors in the output).
-  1. If for some reason plugin does not see the update of a particular script, then change ancestor (which is a script) and then all descendants will be updated.
+1. The plugin is completely (almost) synchronized with Replicated Storage, when you change any script it will be synchronized with the internal environment (because of this there may be quite a lot of errors in the output).
+1. If for some reason plugin does not see the update of a particular script, then change ancestor (which is a script) and then all descendants will be updated.
+
+<p align="center">
+  <img src="Assets/UIML Plugin.png" alt="Logo" width="250"/>
+</p>
 
 ## Usage
 
 ### Module
 
 ```luau
-local UIML = require("Somewhere it located")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UIML = require(ReplicatedStorage.Libraries.UIML)
 
 UIML:Init()
 
@@ -29,9 +34,24 @@ local Frame = Instance.new("Frame")
 Frame:SetAttribute("UITheme", "Framework")
 Frame:SetAttribute("UIObject", "ToggleButton")
 
-UIML:Apply(Frame)
+local MetaData = {
+    GuiObject = Frame,
+}
+
+UIML:Apply(MetaData)
 ```
 
 ### Controller
 
-:warning: Not implemented yet :) :warning:
+```luau
+UserInterface:Init()
+
+local Frame = Instance.new("Frame")
+
+Frame:SetAttribute("UITheme", "Framework")
+Frame:SetAttribute("UIObject", "ToggleButton")
+
+UserInterface:Apply(Frame)
+```
+
+:warning: Framework not implemented yet :) :warning:
